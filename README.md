@@ -69,3 +69,29 @@ const LoginForm = enhanceWith(
   );
 });
 ```
+
+### `ref` Based Form Example
+
+```tsx
+import * as React from "react";
+import {enhanceWith, bindInputRef, getInputValues} from "@helpfulhuman/react-enhance";
+
+const LoginForm = enhanceWith(
+  null,
+  function mapStaticMethods(hoc) {
+    return {
+      bindEmailInput: bindInputRef(hoc, "email"),
+      bindPasswordInput: bindInputRef(hoc, "password"),
+      onSubmit() { console.log(getInputValues(hoc)); },
+    };
+  }
+)(function (props) {
+  return (
+    <div>
+      <input type="email" onChange={props.onEmailChange} value={props.email} />
+      <input type="password" onChange={props.onPasswordChange} value={props.password} />
+      <button onClick={props.onSubmit}>Login</button>
+    </div>
+  );
+});
+```

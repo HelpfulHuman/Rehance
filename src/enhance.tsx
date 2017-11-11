@@ -26,6 +26,10 @@ export interface MapLifecycleHooks<P, S> {
   (component: React.Component<P, S>): LifecycleHooks<P, S>;
 }
 
+export interface EnhancedComponent extends React.Component {
+  inputRefs: object;
+}
+
 /**
  * Capitalizes the first letter of the given string.
  */
@@ -38,20 +42,22 @@ export function capitalize(str: string): string {
  * miniature reducer.
  */
 export function enhanceWith<P = any, S = any>(
-  getDefaultState: GetDefaultState<P, S>,
+  getDefaultState?: GetDefaultState<P, S>,
   mapStaticMethods?: MapStaticMethods<P, S>,
   mapLifecycleHooks?: MapLifecycleHooks<P, S>
 ): ComponentFactory<P, S> {
   return function(Component) {
-    return class extends React.PureComponent<P, S> {
+    return class extends React.PureComponent<P, S> implements EnhancedComponent {
 
-      methods: object = {};
-
+      private methods: object = {};
+      public inputRefs: object = {};
 
       constructor(props, context) {
         super(props, context);
 
-        this.state = getDefaultState(props);
+        if (getDefaultState) {
+          this.state = getDefaultState(props);
+        }
 
         if (mapStaticMethods) {
           this.methods = mapStaticMethods(this);
