@@ -16,17 +16,16 @@ npm i -S @helpfulhuman/react-enhance
 
 ```tsx
 import * as React from "react";
-import {enhanceWith, bindInputChange} from "@helpfulhuman/react-enhance";
+import {enhanceWith} from "@helpfulhuman/react-enhance";
 
 const Counter = enhanceWith(
   function getDefaultState(props) {
     return { count: 0 };
   },
-  function mapStaticMethods(hoc) {
-    const setCount = bindSetState(hoc, "count");
+  function mapStaticMethods({ state, setState }) {
     return {
-      increment() { setCount(hoc.state.count + 1); },
-      decrement() { setCount(hoc.state.count - 1); },
+      increment() { setState({ count: state.count + 1 }); },
+      decrement() { setState({ count: state.count - 1 }); },
     };
   }
 )(function (props) {
