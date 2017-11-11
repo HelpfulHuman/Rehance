@@ -1,71 +1,79 @@
 import * as React from "react";
 
-export interface ReferenceElement {
-  value: any;
+export interface ComponentFactory<P, S> {
+  (Component: React.Component): React.Component<P, S>;
 }
 
-export interface ReferenceBinder {
-  (component: ReferenceElement): void;
+export interface GetDefaultState<P, S> {
+  (props: P): S;
 }
 
-export interface EnhanceableComponent<P> {
-  props: P;
-  state: object;
-  methods: object;
-  hooks: object;
-  inputs: {[key: string]: ReferenceElement};
-  inputBinders: {[key: string]: ReferenceBinder};
-  setState(f: (prevState: object, props: object) => any, callback?: () => any): void;
-  setState(state: any, callback?: () => any): void;
+export interface MapStaticMethods<P, S> {
+  (component: React.Component<P, S>): object;
 }
 
-export interface Enhancer<P = any> {
-  (component: EnhanceableComponent<P>): void;
+export interface LifecycleHooks<P, S> {
+  willMount?: () => void;
+  didMount?: () => void;
+  willUnmount?: () => void;
+  willReceiveProps?: (nextProps: P) => void;
+  willUpdate?: (nextProps: P, nextState: S) => void;
+  didUpdate?: (nextProps: P, nextState: S) => void;
+  didCatch?: (err: Error) => void;
 }
 
-export interface ComponentFactory<P> {
-  (Component: React.Component): React.Component<P>;
+export interface MapLifecycleHooks<P, S> {
+  (component: React.Component<P, S>): LifecycleHooks<P, S>;
 }
 
-export function enhance<P = any>(...enhancers: Enhancer<P>[]): ComponentFactory<P> {
+/**
+ * Capitalizes the first letter of the given string.
+ */
+export function capitalize(str: string): string {
+  return (str.charAt(0).toUpperCase() + str.slice(1));
+}
+
+/**
+ * Create a new component that uses treats its state as its own,
+ * miniature reducer.
+ */
+export function enhanceWith<P = any, S = any>(
+  getDefaultState: GetDefaultState<P, S>,
+  mapStaticMethods?: MapStaticMethods<P, S>,
+  mapLifecycleHooks?: MapLifecycleHooks<P, S>
+): ComponentFactory<P, S> {
   return function(Component) {
-    return class extends React.PureComponent<P> implements EnhanceableComponent<P> {
+    return class extends React.PureComponent<P, S> {
 
-      state         = {};
-      methods       = {};
-      hooks         = {};
-      inputs        = {};
-      inputBinders  = {};
+      methods: object = {};
+
 
       constructor(props, context) {
         super(props, context);
-        this.getInputValues = this.getInputValues.bind(this);
-        for (var i = 0; i < enhancers.length; i++) {
-          enhancers[i](this);
-        }
-      }
 
-      /**
-       * Returns the values from any bound input elements as a single
-       * JS object.
-       */
-      getInputValues<T = object>(): T {
-        var input = {};
-        for (var key in this.inputs) {
-          input[key] = this.inputs[key].value;
+        this.state = getDefaultState(props);
+
+        if (mapStaticMethods) {
+          this.methods = mapStaticMethods(this);
         }
-        return input as T;
+
+        if (mapLifecycleHooks) {
+          var hooks = mapLifecycleHooks(this);
+          for (var name in hooks) {
+            var fullName    = ("component" + capitalize(name));
+            this[fullName]  = hooks[name](this);
+          }
+        }
       }
 
       render() {
-        var { children, ...props } = this.props as any;
+        var {children, ...props} = this.props as any;
+
         return (
           <Component
-            bindInput={this.inputBinders}
-            getInputValues={this.getInputValues}
+            {...props}
             {...this.state}
-            {...this.methods}
-            {...props}>
+            {...this.methods}>
             {children}
           </Component>
         );

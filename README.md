@@ -1,6 +1,6 @@
 # React Enhance
 
-This is a utility library for React to be able to build more robust functionality on top of stateless (aka, pure function) components.  This library is inspired by [recompose](https://npmjs.com/package/recompose), but aims to create a _single_ higher-order component instead of multiple.
+This is a utility library for React to be able to build more robust functionality on top of stateless (aka, pure function) components.  This library is inspired by [recompose](https://npmjs.com/package/recompose) and [react-redux's `connect()` method](https://npmjs.com/package/react-redux), but aims to create a _single_ higher-order component instead of multiple.
 
 ## Getting Started
 
@@ -16,40 +16,55 @@ npm i -S @helpfulhuman/react-enhance
 
 ```tsx
 import * as React from "react";
-import {enhance, addStateValue, addMethod} from "@helpfulhuman/react-enhance";
+import {enhance, bindInputChange} from "./enhance";
 
 const Counter = enhance(
-  addStateValue("count", "setCount", 0),
-  addMethod("increment", ({ setCount, state }) => setCount(state.count + 1)),
-  addMethod("decrement", ({ setCount, state }) => setCount(state.count - 1))
+  function getDefaultState(props) {
+    return { count: 0 };
+  },
+  function mapStaticMethods(hoc) {
+    const setCount = bindSetState(hoc, "count");
+    return {
+      increment() { setCount(hoc.state.count + 1); },
+      decrement() { setCount(hoc.state.count - 1); },
+    };
+  }
 )(function (props) {
   return (
     <div>
-      {props.count}
+      Count: {props.count}
       <button onClick={props.increment}>+1</button>
-      <button onClick={props.increment}>-1</button>
+      <button onClick={props.decrement}>-1</button>
     </div>
   );
 });
 ```
 
-### Form Example (using `ref`)
+### Stateful Form Example
 
 ```tsx
 import * as React from "react";
-import {enhance, addInput, addMethod} from "@helpfulhuman/react-enhance";
+import {enhance, bindInputChange} from "./enhance";
 
 const LoginForm = enhance(
-  addInput("email"),
-  addInput("password"),
-  addMethod("onSubmit", ({ getInputValues }) => {
-    console.log(getInputValues());
-  })
+  function getDefaultState(props) {
+    return {
+      email: "",
+      password: "",
+    };
+  },
+  function mapStaticMethods(hoc) {
+    return {
+      onEmailChange: bindInputChange(hoc, "email"),
+      onPasswordChange: bindInputChange(hoc, "password"),
+      onSubmit() { console.log(hoc.state); },
+    };
+  }
 )(function (props) {
   return (
     <div>
-      <input type="email" ref={props.bindInput.email} />
-      <input type="password" ref={props.bindInput.password} />
+      <input type="email" onChange={props.onEmailChange} value={props.email} />
+      <input type="password" onChange={props.onPasswordChange} value={props.password} />
       <button onClick={props.onSubmit}>Login</button>
     </div>
   );
