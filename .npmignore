@@ -1,5 +1,6 @@
 src/
 test/
+.rpt2_cache/
 tsconfig.json
 rollup.config.json
 *.log
