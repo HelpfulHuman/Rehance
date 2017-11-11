@@ -5,7 +5,7 @@ export interface EnhancedComponent<P, S> extends React.Component<P, S> {
 }
 
 export interface ComponentFactory<P, S> {
-  (Component: React.Component): React.Component<P, S>;
+  (Component: React.Component<P, S>|React.StatelessComponent<P>): React.Component<P, S>;
 }
 
 export interface GetDefaultState<P, S> {
