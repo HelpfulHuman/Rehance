@@ -7,7 +7,7 @@ This is a utility library for React to be able to build more robust functionalit
 Install via `npm`:
 
 ```
-npm i -S @helpfulhuman/react-enhance
+npm i -S rehance
 ```
 
 ## Usage
@@ -16,7 +16,7 @@ npm i -S @helpfulhuman/react-enhance
 
 ```tsx
 import * as React from "react";
-import {enhanceWith} from "@helpfulhuman/react-enhance";
+import {enhanceWith} from "rehance";
 
 const Counter = enhanceWith(
   function getDefaultState(props) {
@@ -43,7 +43,7 @@ const Counter = enhanceWith(
 
 ```tsx
 import * as React from "react";
-import {enhanceWith} from "@helpfulhuman/react-enhance";
+import {enhanceWith} from "rehance";
 
 const NewsFeed = enhanceWith(
   function getDefaultState(props) {
@@ -79,7 +79,7 @@ const NewsFeed = enhanceWith(
 
 ```tsx
 import * as React from "react";
-import {enhanceWith, bindInputChange} from "@helpfulhuman/react-enhance";
+import {enhanceWith, bindInputChange} from "rehance";
 
 const LoginForm = enhanceWith(
   function getDefaultState(props) {
@@ -110,7 +110,7 @@ const LoginForm = enhanceWith(
 
 ```tsx
 import * as React from "react";
-import {enhanceWith, bindInputRef, getInputValues} from "@helpfulhuman/react-enhance";
+import {enhanceWith, bindInputRef, getInputValues} from "rehance";
 
 const LoginForm = enhanceWith(
   null,
