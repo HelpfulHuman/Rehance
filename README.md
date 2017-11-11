@@ -1,4 +1,4 @@
-# React Enhance
+# Rehance
 
 This is a utility library for React to be able to build more robust functionality on top of stateless (aka, pure function) components.  This library is inspired by [recompose](https://npmjs.com/package/recompose) and [react-redux's `connect()` method](https://npmjs.com/package/react-redux), but aims to create a _single_ higher-order component instead of multiple.
 
@@ -6,7 +6,7 @@ This is a utility library for React to be able to build more robust functionalit
 
 Install via `npm`:
 
-```
+```bash
 npm i -S rehance
 ```
 

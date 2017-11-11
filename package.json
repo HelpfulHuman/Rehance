@@ -18,7 +18,7 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/helpfulhuman/react-enhance.git"
+    "url": "git+https://github.com/helpfulhuman/renhance.git"
   },
   "keywords": [
     "react",
@@ -29,9 +29,9 @@
   "author": "Nick Glenn <nick@helpfulhuman.com>",
   "license": "MIT",
   "bugs": {
-    "url": "https://github.com/helpfulhuman/react-enhance/issues"
+    "url": "https://github.com/helpfulhuman/renhance/issues"
   },
-  "homepage": "https://github.com/helpfulhuman/react-enhance#readme",
+  "homepage": "https://github.com/helpfulhuman/renhance#readme",
   "dependencies": {
     "react": "^16.1.0"
   },
