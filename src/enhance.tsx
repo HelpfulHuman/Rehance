@@ -1,5 +1,9 @@
 import * as React from "react";
 
+export interface EnhancedComponent<P, S> extends React.Component<P, S> {
+  inputRefs: object;
+}
+
 export interface ComponentFactory<P, S> {
   (Component: React.Component): React.Component<P, S>;
 }
@@ -9,7 +13,7 @@ export interface GetDefaultState<P, S> {
 }
 
 export interface MapStaticMethods<P, S> {
-  (component: React.Component<P, S>): object;
+  (component: EnhancedComponent<P, S>): object;
 }
 
 export interface LifecycleHooks<P, S> {
@@ -23,11 +27,7 @@ export interface LifecycleHooks<P, S> {
 }
 
 export interface MapLifecycleHooks<P, S> {
-  (component: React.Component<P, S>): LifecycleHooks<P, S>;
-}
-
-export interface EnhancedComponent extends React.Component {
-  inputRefs: object;
+  (component: EnhancedComponent<P, S>): LifecycleHooks<P, S>;
 }
 
 /**
@@ -47,7 +47,7 @@ export function enhanceWith<P = any, S = any>(
   mapLifecycleHooks?: MapLifecycleHooks<P, S>
 ): ComponentFactory<P, S> {
   return function(Component) {
-    return class extends React.PureComponent<P, S> implements EnhancedComponent {
+    return class extends React.PureComponent<P, S> implements EnhancedComponent<P, S> {
 
       private methods: object = {};
       public inputRefs: object = {};
