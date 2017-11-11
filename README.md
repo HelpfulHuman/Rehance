@@ -16,9 +16,9 @@ npm i -S @helpfulhuman/react-enhance
 
 ```tsx
 import * as React from "react";
-import {enhance, bindInputChange} from "./enhance";
+import {enhanceWith, bindInputChange} from "@helpfulhuman/react-enhance";
 
-const Counter = enhance(
+const Counter = enhanceWith(
   function getDefaultState(props) {
     return { count: 0 };
   },
@@ -44,9 +44,9 @@ const Counter = enhance(
 
 ```tsx
 import * as React from "react";
-import {enhance, bindInputChange} from "./enhance";
+import {enhanceWith, bindInputChange} from "@helpfulhuman/react-enhance";
 
-const LoginForm = enhance(
+const LoginForm = enhanceWith(
   function getDefaultState(props) {
     return {
       email: "",
