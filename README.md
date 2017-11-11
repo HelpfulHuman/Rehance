@@ -124,8 +124,8 @@ const LoginForm = enhanceWith(
 )(function (props) {
   return (
     <div>
-      <input type="email" ref={this.bindEmailInput} />
-      <input type="password" ref={this.bindPasswordInput} />
+      <input type="email" ref={props.bindEmailInput} />
+      <input type="password" ref={props.bindPasswordInput} />
       <button onClick={props.onSubmit}>Login</button>
     </div>
   );
