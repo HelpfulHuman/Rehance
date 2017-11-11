@@ -39,6 +39,42 @@ const Counter = enhanceWith(
 });
 ```
 
+### Fetch Data on Load
+
+```tsx
+import * as React from "react";
+import {enhanceWith} from "@helpfulhuman/react-enhance";
+
+const NewsFeed = enhanceWith(
+  function getDefaultState(props) {
+    return {
+      loading: true,
+      data: null,
+    };
+  },
+  null,
+  function mapLifecycleHooks({ props, setState }) {
+    return {willMount() {
+      fetch(props.url).then(function (res) {
+        setState({ loading: false, data: res.json() });
+      });
+    }};
+  }
+)(function (props) {
+  if (props.loading) {
+    return (
+      <div>Loading</div>
+    );
+  }
+
+  return (
+    <div>
+      {props.data.map(item => <div>{item}</div>)}
+    </div>
+  );
+});
+```
+
 ### Stateful Form Example
 
 ```tsx
