@@ -5,7 +5,7 @@ export interface EnhancedComponent<P, S> extends React.Component<P, S> {
 }
 
 export interface ComponentFactory<P, S> {
-  (Component: React.Component<P, S>|React.StatelessComponent<P>): React.Component<P, S>;
+  (Component: React.ComponentClass<P>|React.StatelessComponent<P>): React.ComponentClass<P>;
 }
 
 export interface GetDefaultState<P, S> {
@@ -47,6 +47,7 @@ export function enhanceWith<P = any, S = any>(
   mapLifecycleHooks?: MapLifecycleHooks<P, S>
 ): ComponentFactory<P, S> {
   return function(Component) {
+
     return class extends React.PureComponent<P, S> implements EnhancedComponent<P, S> {
 
       private methods: object = {};
@@ -85,6 +86,6 @@ export function enhanceWith<P = any, S = any>(
         );
       }
 
-    };
-  } as any;
+    }
+  };
 }
