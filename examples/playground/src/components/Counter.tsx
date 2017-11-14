@@ -1,7 +1,13 @@
 import * as React from "react";
 import {enhanceWith} from "../../../../src";
 
-export function CounterStateless(props) {
+export interface Props {
+  count: number;
+  onIncrementClick(): void;
+  onDecrementClick(): void;
+}
+
+export function CounterStateless<Props>(props) {
   return (
     <div>
       Count: {props.count}
@@ -11,7 +17,11 @@ export function CounterStateless(props) {
   );
 }
 
-const enhance = enhanceWith(
+export interface EnhancedProps {
+  initialCount?: number;
+}
+
+const enhance = enhanceWith<EnhancedProps>(
   function getDefaultState(props) {
     return { count: (props.initialCount || 0) };
   },
