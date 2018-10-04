@@ -1,6 +1,6 @@
 # Rehance
 
-This is a utility library for React to be able to build more robust functionality on top of stateless (aka, pure function) components.  This library is inspired by [recompose](https://npmjs.com/package/recompose) and [react-redux's `connect()` method](https://npmjs.com/package/react-redux), but aims to create a _single_ higher-order component instead of multiple.
+Rehance is a state-management utility for React components and allows you to add state to stateless (aka, pure function) components.
 
 ## Getting Started
 
@@ -12,64 +12,45 @@ npm i -S rehance
 
 ## Usage
 
-### Counter Example
+This library exposes several functions that you can compose to create [higher-order components](https://reactjs.org/docs/higher-order-components.html) that encapsulate and handle multiple types of values and their state.  The most important of these functions is `enhanceWith()`.
 
 ```tsx
 import * as React from "react";
 import {enhanceWith} from "rehance";
+import Example from "./components/Example";
 
-const Counter = enhanceWith(
-  function getDefaultState(props) {
-    return { count: 0 };
-  },
-  function mapStaticMethods({ state, setState }) {
-    return {
-      increment() { setState({ count: state.count + 1 }); },
-      decrement() { setState({ count: state.count - 1 }); },
-    };
-  }
-)(function (props) {
-  return (
-    <div>
-      Count: {props.count}
-      <button onClick={props.increment}>+1</button>
-      <button onClick={props.decrement}>-1</button>
-    </div>
-  );
+const withValues = enhanceWith({
+  //
+}, {
+
 });
+
+const ExampleWithValues = withValues(Example);
 ```
 
-### Fetch Data on Load
+### Counter Example
+
+Let's look at the simple type of state, which is made possible via the `simple()` function.  This method can track a value and will update the
 
 ```tsx
 import * as React from "react";
-import {enhanceWith} from "rehance";
+import {enhanceWith, simple} from "rehance";
 
-const NewsFeed = enhanceWith(
-  function getDefaultState(props) {
-    return {
-      loading: true,
-      data: null,
-    };
+const Counter = enhanceWith({
+  count: simple(0),
+}, {
+  increment({ count }) {
+    count.set(count.value + 1);
   },
-  null,
-  function mapLifecycleHooks({ props, setState }) {
-    return {willMount() {
-      fetch(props.url).then(function (res) {
-        setState({ loading: false, data: res.json() });
-      });
-    }};
-  }
-)(function (props) {
-  if (props.loading) {
-    return (
-      <div>Loading</div>
-    );
-  }
-
+  decrement({ count }) {
+    count.set(count.value - 1);
+  },
+})(function (props) {
   return (
     <div>
-      {props.data.map(item => <div>{item}</div>)}
+      Count: {props.count.value}
+      <button onClick={props.increment}>+1</button>
+      <button onClick={props.decrement}>-1</button>
     </div>
   );
 });
@@ -79,28 +60,31 @@ const NewsFeed = enhanceWith(
 
 ```tsx
 import * as React from "react";
-import {enhanceWith, bindInputChange} from "rehance";
+import {enhanceWith, asInput, isEmail, isLength} from "rehance";
 
-const LoginForm = enhanceWith(
-  function getDefaultState(props) {
-    return {
-      email: "",
-      password: "",
-    };
+const LoginForm = enhanceWith({
+  emailInput: asInput({ type: "email", validate: isEmail() }),
+  passwordInput: asInput({ type: "password", validate: isLength(8, 24) }),
+}, {
+  isValid({ emailInput, passwordInput }) {
+    return (
+      emailInput.isValid && passwordInput.isValid
+    );
   },
-  function mapStaticMethods(hoc) {
-    return {
-      onEmailChange: bindInputChange(hoc, "email"),
-      onPasswordChange: bindInputChange(hoc, "password"),
-      onSubmit() { console.log(hoc.state); },
-    };
-  }
-)(function (props) {
+  onSubmit({ emailInput, passwordInput }, ownProps) {
+    console.log("Email: " + emailInput.value);
+    console.log("Password: " + passwordInput.value);
+  },
+})(function (props) {
   return (
     <div>
-      <input type="email" onChange={props.onEmailChange} value={props.email} />
-      <input type="password" onChange={props.onPasswordChange} value={props.password} />
-      <button onClick={props.onSubmit}>Login</button>
+      <input {...props.emailInput} />
+      <input {...props.passwordInput} />
+      <button
+        disabled={!props.isValid()}
+        onClick={props.onSubmit}>
+        Login
+      </button>
     </div>
   );
 });
@@ -110,22 +94,21 @@ const LoginForm = enhanceWith(
 
 ```tsx
 import * as React from "react";
-import {enhanceWith, bindInputRef, getInputValues} from "rehance";
+import {enhanceWith, byRef} from "rehance";
 
-const LoginForm = enhanceWith(
-  null,
-  function mapStaticMethods(hoc) {
-    return {
-      bindEmailInput: bindInputRef(hoc, "email"),
-      bindPasswordInput: bindInputRef(hoc, "password"),
-      onSubmit() { console.log(getInputValues(hoc)); },
-    };
-  }
-)(function (props) {
+const LoginForm = enhanceWith({
+  emailInput: byRef(),
+  passwordInput: byRef(),
+}, {
+  onSubmit({ emailInput, passwordInput }, ownProps) {
+    console.log("Email: " + emailInput.value);
+    console.log("Password: " + passwordInput.value);
+  },
+})(function (props) {
   return (
     <div>
-      <input type="email" ref={props.bindEmailInput} />
-      <input type="password" ref={props.bindPasswordInput} />
+      <input type="email" ref={props.emailInput.ref} />
+      <input type="password" ref={props.passwordInput.ref} />
       <button onClick={props.onSubmit}>Login</button>
     </div>
   );

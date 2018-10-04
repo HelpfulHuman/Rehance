@@ -1,84 +1,73 @@
 import * as React from "react";
 
-export interface EnhancedComponent<P, S> extends React.Component<P, S> {
-  inputRefs: object;
+export interface ValueFactory<Props = any, ValueType = any> {
+  (Component: React.Component<Props>): ValueType;
 }
 
-export interface ComponentFactory<P, S> {
-  (Component: React.Component): React.Component<P, S>;
-}
+export type ValueFactories<Values, Props> = {
+  [key in keyof Values]: ValueFactory<Props, Values[key]>;
+};
 
-export interface GetDefaultState<P, S> {
-  (props: P): S;
-}
+export interface StaticMethod<V, P> {
+  (values: V, props: P): any;
+};
 
-export interface MapStaticMethods<P, S> {
-  (component: EnhancedComponent<P, S>): object;
-}
+export type StaticMethods<M, V, P> = {
+  [key in keyof M]: StaticMethod<V, P>;
+};
 
-export interface LifecycleHooks<P, S> {
-  willMount?: () => void;
-  didMount?: () => void;
-  willUnmount?: () => void;
-  willReceiveProps?: (nextProps: P) => void;
-  willUpdate?: (nextProps: P, nextState: S) => void;
-  didUpdate?: (nextProps: P, nextState: S) => void;
-  didCatch?: (err: Error) => void;
-}
+export type WrappedStaticMethods<Methods> = {
+  [key in keyof Methods]: {(): any};
+};
 
-export interface MapLifecycleHooks<P, S> {
-  (component: EnhancedComponent<P, S>): LifecycleHooks<P, S>;
+export interface ComponentFactory<ChildProps, OwnProps> {
+  (Component: React.ComponentType<ChildProps>): React.ComponentType<OwnProps>;
 }
 
 /**
- * Capitalizes the first letter of the given string.
+ * Creates a new component that tracks the state of the given fields and builds and
+ * provides the static methods that have been defined (if any).
  */
-export function capitalize(str: string): string {
-  return (str.charAt(0).toUpperCase() + str.slice(1));
-}
+export function enhanceWith<
+  OwnProps  = {},
+  Values    = {},
+  Methods   = {},
+>(
+  values: ValueFactories<Values, OwnProps>,
+  methods: StaticMethods<Methods, Values, OwnProps> = {} as any,
+): ComponentFactory<OwnProps & Values & WrappedStaticMethods<Methods>, OwnProps> {
+  return function (Component) {
+    return class extends React.Component<OwnProps> {
 
-/**
- * Create a new component that uses treats its state as its own,
- * miniature reducer.
- */
-export function enhanceWith<P = any, S = any>(
-  getDefaultState?: GetDefaultState<P, S>,
-  mapStaticMethods?: MapStaticMethods<P, S>,
-  mapLifecycleHooks?: MapLifecycleHooks<P, S>
-): ComponentFactory<P, S> {
-  return function(Component) {
-    return class extends React.PureComponent<P, S> implements EnhancedComponent<P, S> {
+      // The stateful values that are passed down to render() and
+      // static methods.
+      values: Values = {} as any;
 
-      private methods: object = {};
-      public inputRefs: object = {};
+      methods: WrappedStaticMethods<Methods> = {} as any;
 
       constructor(props, context) {
         super(props, context);
 
-        if (getDefaultState) {
-          this.state = getDefaultState(props);
+        // hard-bind of our given static methods
+        for (var m in methods) {
+          let _method = methods[m];
+          this.methods[m] = () => _method(this.values, this.props);
         }
 
-        if (mapStaticMethods) {
-          this.methods = mapStaticMethods(this);
-        }
-
-        if (mapLifecycleHooks) {
-          var hooks = mapLifecycleHooks(this);
-          for (var name in hooks) {
-            var fullName    = ("component" + capitalize(name));
-            this[fullName]  = hooks[name](this);
-          }
+        // create the values from the value factories
+        for (var v in values) {
+          var createValue = values[v];
+          this.values[v] = createValue(this);
         }
       }
 
       render() {
-        var {children, ...props} = this.props as any;
+        var { children, ...props } = this.props as any;
 
         return (
           <Component
             {...props}
-            {...this.state}
+            {...this.values}
             {...this.methods}>
             {children}
           </Component>
@@ -86,5 +75,27 @@ export function enhanceWith<P = any, S = any>(
       }
 
     };
-  } as any;
+  };
 }
+
+
+type Values = {
+  foo: {
+    readonly value: string;
+  }
+};
+
+enhanceWith<any, Values>({
+  foo: (Component) => ({
+    get value() { return "hello" },
+  }),
+}, {
+  bar(values) {
+    values.foo.value;
+  }
+})(function (props) {
+
+  return (
+    <div></div>
+  );
+});
